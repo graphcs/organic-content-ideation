@@ -55,7 +55,7 @@ export default function Specimen({
     : "date unknown";
 
   return (
-    <>
+    <div key={post.id}>
       <div className="colhead">
         <h2>@{post.handle}</h2>
         <span className="sub">
@@ -170,6 +170,6 @@ export default function Specimen({
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }

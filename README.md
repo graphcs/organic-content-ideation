@@ -24,6 +24,7 @@ npm install
 cp .env.example .env     # then fill in the keys
 npm run db:push          # creates data.db
 npm run seed             # loads fixtures/sample-feed.json
+                         # (add -- --reset to wipe edits and start clean)
 npm run dev              # http://localhost:3000
 ```
 
@@ -31,9 +32,14 @@ That is enough to see the whole flow, including live copy generation. The two ex
 pieces are only needed to harvest real posts:
 
 ```bash
-npx playwright install chromium      # the feed harvester
-pip install -r scraper/requirements.txt   # visual and audio hook extraction
+npx patchright install chromium      # the feed harvester (patched Playwright)
+
+python3 -m venv .venv                # enrichment: frames, OCR, transcription
+.venv/bin/pip install -r scraper/requirements.txt
 ```
+
+Enrichment needs its own virtualenv — Homebrew and system Pythons refuse global
+installs (PEP 668). `npm run enrich` uses `.venv` when it exists.
 
 ## Connecting an Instagram account
 
@@ -82,6 +88,19 @@ prisma/schema.prisma    accounts, posts, hooks, generations
 fixtures/               captured runs, so any demo is reproducible
 docs/                   design direction, demo notes, open questions
 ```
+
+## Tests
+
+```bash
+npm test                 # scoring rules, payload parser, then the browser smoke test
+npm run test:outlier     # what the multiple means, and when it refuses to guess
+npm run test:harvest     # the feed payload walker, against captured response shapes
+npm run test:smoke       # a real browser against a running dev server
+```
+
+`test:smoke` needs `npm run dev` running. These are the checks that caught actual
+bugs while building — switching posts must swap every field, long transcripts must
+not be clipped, and typing `x` in a caption must not reject the post.
 
 ## Limitations
 

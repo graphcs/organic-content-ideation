@@ -200,17 +200,25 @@ def main() -> int:
             INSERT INTO Hook (id, postId, visual, audio, audioState, body, editedByUser, extractedAt, updatedAt)
             VALUES (lower(hex(randomblob(12))), ?, ?, ?, ?, ?, 0, datetime('now'), datetime('now'))
             ON CONFLICT(postId) DO UPDATE SET
-              visual = excluded.visual,
-              audio = excluded.audio,
-              audioState = excluded.audioState,
-              body = excluded.body,
+              -- Never overwrite something real with nothing. A failed vision call, an
+              -- expired CDN url or a missing API key must not wipe hooks the harvester
+              -- already captured from the feed payload. Re-running enrichment fills
+              -- gaps; it does not destroy. Use --force with a working extractor to
+              -- genuinely replace a value.
+              visual = COALESCE(excluded.visual, Hook.visual),
+              audio = COALESCE(excluded.audio, Hook.audio),
+              audioState = CASE
+                WHEN excluded.audioState = 'unknown' THEN Hook.audioState
+                ELSE excluded.audioState
+              END,
+              body = COALESCE(excluded.body, Hook.body),
               extractedAt = excluded.extractedAt,
               updatedAt = excluded.updatedAt
             """,
             (row["id"], result.visual, result.audio, result.audio_state, result.body),
         )
         db.commit()
-        print(f"    visual: {result.visual or '—'}")
+        print(f"    visual: {result.visual or '— (kept whatever was already there)'}")
         print(f"    audio:  {result.audio_state}")
 
     db.close()

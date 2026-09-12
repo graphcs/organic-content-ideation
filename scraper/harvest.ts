@@ -13,10 +13,19 @@
  *  2. Where it does touch the DOM, it selects on structure — article elements,
  *     time[datetime], anchors matching /p/ and /reel/ — never on styling classes.
  *
+ * On stealth: vanilla Playwright is trivially detectable. It leaks the usual CDP
+ * signals, and Instagram checks. So the browser comes from `patchright` — a drop-in
+ * patched Playwright that closes those leaks — and falls back to plain Playwright if
+ * it is not installed, which is fine for reading the tests but not for a real run.
+ *
+ * Stealth reduces the chance of being *fingerprinted* as automation. It does nothing
+ * about behaving like a bot, which is the larger risk and is handled by pacing:
+ * human-speed scrolling, randomised dwell, a cap per run, and never unattended.
+ *
  * Risks are documented in PLAN.md section 3. The short version: use a burner.
  */
 
-import { chromium, type BrowserContext, type Page } from "playwright";
+import type { BrowserContext, Page } from "patchright";
 import { mkdirSync, writeFileSync } from "node:fs";
 
 const PROFILE_DIR = ".ig-profile";
@@ -57,7 +66,21 @@ function hueFor(handle: string): number {
   return h;
 }
 
+/** Prefer the patched build; say so plainly when falling back. */
+async function browser() {
+  try {
+    return (await import("patchright")).chromium;
+  } catch {
+    console.warn(
+      "patchright not installed — falling back to plain Playwright, which Instagram can detect. `npm i -D patchright && npx patchright install chromium`",
+    );
+    // Structurally the same API; the two packages just ship separate nominal types.
+    return (await import("playwright")).chromium as unknown as typeof import("patchright").chromium;
+  }
+}
+
 export async function openSession(): Promise<BrowserContext> {
+  const chromium = await browser();
   return chromium.launchPersistentContext(PROFILE_DIR, {
     headless: false,
     viewport: { width: 1280, height: 900 },
@@ -82,7 +105,7 @@ export async function login(): Promise<void> {
  * Instagram reshapes these payloads regularly, so this looks for the field names
  * rather than for a fixed path through the object.
  */
-function collectFromPayload(node: unknown, out: Map<string, Partial<HarvestedPost>>): void {
+export function collectFromPayload(node: unknown, out: Map<string, Partial<HarvestedPost>>): void {
   if (!node || typeof node !== "object") return;
 
   if (Array.isArray(node)) {

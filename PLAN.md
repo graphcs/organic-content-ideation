@@ -72,6 +72,14 @@ A headed Chromium instance with a persistent user-data directory. The account is
 | **Playwright, real session** | **Yes** | **Moderate** | Free | Chosen |
 | Chrome extension on the strategist's own browsing | Yes | Lowest | Free | Best long-term; too many moving parts for a prototype demo |
 
+**Why Playwright and not an agentic browser tool.** Three things were considered:
+
+- **Stagehand** (LLM-driven browser automation) earns its cost when you are scraping the *DOM* and the DOM keeps changing — you ask for "the view count" instead of writing a selector. This harvester reads the feed's own XHR payloads instead, so that resilience is already bought a cheaper way. Putting an LLM in the extraction path would also mean a hallucinated view count could silently corrupt every outlier multiple downstream, which is the one number the whole tool is built around. It does nothing for detection either — it is Playwright underneath.
+- **An agent driving the operator's real Chrome** has the lowest detection risk of anything here, because it *is* a real human session. But it cannot ship as `npm run ig:harvest`, it needs an agent running to work at all, and it is not something the client can hand to someone else. That approach is the right long-term answer as a browser extension, which is why it is listed in the table above.
+- **Plain Playwright** is trivially fingerprinted. Instagram checks. So the harvester runs on **patchright**, a drop-in patched Playwright that closes the well-known CDP leaks, and falls back to stock Playwright with a warning if it is not installed.
+
+Stealth only stops you being identified as automation. It does nothing about *behaving* like a bot, which is the larger risk and is handled by pacing — see below.
+
 **Risks, stated plainly:**
 
 1. **Terms of Service.** Automated collection breaches Instagram's ToS. This is true of every method that reaches the home feed, including the manual copy-paste the team does today, at a different scale. Mitigation is behavioural, not technical: use a **dedicated burner account** that is not linked to a business asset, never the client's real account.

@@ -32,9 +32,23 @@ Each run is also written to `fixtures/feed-<timestamp>.json`, so any harvest can
 
 | Piece | Status |
 |---|---|
-| UI, triage, scoring, CLI | Run against the sample harvest end to end |
+| UI, triage, editing, filters, keyboard | Verified in a real browser — `npm run test:smoke` |
+| Outlier scoring, including refusing to score | Verified — `npm run test:outlier` |
 | Streaming writing bot | Verified live, in the browser and from the CLI |
-| Playwright harvester | **Written, not yet run against a live account** — no Instagram account has been connected. This is the piece that needs the burner account decision in `docs/QUESTIONS.md` |
-| Enrichment worker | **Written, not yet run** — it needs videos from a real harvest |
+| CLI, and that it reads the UI's edits | Verified end to end |
+| Enrichment: audio hooks and transcripts | **Verified** against generated speech, music-only and silent clips — all three classified correctly |
+| Enrichment: visual hooks from frames | Frame extraction verified; the vision call itself needs an `ANTHROPIC_API_KEY`, and degrades to "keep what is there" without one |
+| Harvester: feed payload parser | Verified against captured response shapes — `npm run test:harvest` |
+| Harvester: the live scroll | **Not run against a live account.** No Instagram account is connected yet — this needs the burner decision in `docs/QUESTIONS.md` |
 
-Those last two are stated plainly rather than glossed: the brief asks for one manually connected account, and that account does not exist yet.
+The last row is stated plainly rather than glossed. Everything above it has been executed; that one has not, because the account the brief asks for does not exist yet.
+
+## Bugs this testing found
+
+Worth listing, because they are the kind that survive a demo and surface a week later:
+
+1. **Prisma wrote the database somewhere nothing else looked.** `file:./data.db` resolves relative to `prisma/schema.prisma`, not the project root, so the Python enrichment worker would never have found it.
+2. **A failed extraction wiped good data.** An expired video URL or a missing API key would null out hooks the harvester had already captured. Enrichment now fills gaps and never destroys.
+3. **Switching posts left the previous post's text on screen.** The editable fields used `defaultValue`, which React only reads once — so the header said one account and the hooks belonged to another. The single worst bug for a tool whose entire job is reading the right hooks.
+4. **Long captions and transcripts were clipped to one line.** The autosizing field measured its height before the web font loaded, then never re-measured.
+5. **`export --format=md` silently returned JSON.** The flag parser only looked at arguments after the first two positions.

@@ -7,10 +7,16 @@ import { PrismaStore } from "../src/lib/store-prisma";
 import type { PostView } from "../src/lib/types";
 
 const store = new PrismaStore();
-const [command, sub, ...rest] = process.argv.slice(2);
+const args = process.argv.slice(2);
 
+// Flags are read from the whole argument list, and positionals are whatever is
+// left. Splitting on position instead meant `export --format=md` put the flag
+// where nothing looked for it, and quietly produced JSON.
 const flag = (name: string): string | undefined =>
-  rest.find((a) => a.startsWith(`--${name}=`))?.split("=")[1];
+  args.find((a) => a.startsWith(`--${name}=`))?.split("=").slice(1).join("=");
+
+const positional = args.filter((a) => !a.startsWith("--"));
+const [command, sub, ...rest] = positional;
 
 const pad = (s: string, n: number) => (s.length > n ? `${s.slice(0, n - 1)}…` : s.padEnd(n));
 

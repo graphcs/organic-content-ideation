@@ -2,7 +2,9 @@
 
 A prototype of the "O" step in the STORMING process: harvest the Instagram home feed, rank posts by how far they beat their own account's baseline, dissect the hooks that made them work, and send the winners to MarioBot for ad copy.
 
-> Test project prototype. Runs locally, single operator, no auth. See [`PLAN.md`](PLAN.md) for the approach and [`docs/QUESTIONS.md`](docs/QUESTIONS.md) for open items.
+**Live demo — https://organic-content-ideation.vercel.app** · [what's real on it and what isn't](docs/DEMO.md)
+
+> Test project prototype. Runs locally, single operator, no auth. See [`PLAN.md`](PLAN.md) for the approach, [`docs/DEMO.md`](docs/DEMO.md) for verification status, and [`docs/QUESTIONS.md`](docs/QUESTIONS.md) for open items.
 
 ## What it does
 
@@ -19,16 +21,19 @@ Requires Node 20+, Python 3.11+, and `ffmpeg` on PATH.
 
 ```bash
 npm install
-npx playwright install chromium
-pip install -r scraper/requirements.txt
-
 cp .env.example .env     # then fill in the keys
-npx prisma migrate dev
+npm run db:push          # creates data.db
 npm run seed             # loads fixtures/sample-feed.json
 npm run dev              # http://localhost:3000
 ```
 
-The app boots against fixture data, so you can see the whole flow before connecting an account.
+That is enough to see the whole flow, including live copy generation. The two extra
+pieces are only needed to harvest real posts:
+
+```bash
+npx playwright install chromium      # the feed harvester
+pip install -r scraper/requirements.txt   # visual and audio hook extraction
+```
 
 ## Connecting an Instagram account
 
@@ -43,22 +48,39 @@ The session persists in `.ig-profile/` (gitignored). Use a burner account, not a
 
 ## CLI
 
+The same SQLite file the UI reads, so anything triaged in the browser is immediately
+queryable here.
+
 ```bash
-npm run cli -- posts list --min-multiple 3
-npm run cli -- posts show <id>
-npm run cli -- write <id> --hooks 10
-npm run cli -- export --format md
+npm run cli -- posts list                     # ranked by outlier multiple
+npm run cli -- posts list --min-multiple=3    # only the ones worth a look
+npm run cli -- posts show <id>                # all four hook fields
+npm run cli -- write <id> --hooks=10          # MarioBot, streamed to stdout
+npm run cli -- export --format=md --status=saved
+```
+
+```
+  id                          multiple  account                visual hook
+  --------------------------------------------------------------------------------
+  cmtxqjwrj0002ryc167zltzn5        11x  @thegreyzone.hrt       your doctor called this "normal"
+  cmtxqjwrm0007ryc1s3tkb7qd       6.8x  @hormonehonest         why you need to be SLAMMING carbs for fat loss
+  cmtxqjwrp000cryc1r0c1ogsl       6.2x  @nightshiftgains       the 4am cortisol trap
+  cmtxqjws5001bryc1xjdlxfma   unscored  @rawprotocol           stop eating the seed oils. all of them.
 ```
 
 ## Layout
 
 ```
+src/lib/outlier.ts      the scoring logic — the arithmetic from the Loom, made explicit
+src/lib/store.ts        one data interface, two backings (SQLite locally, memory on the demo)
+src/lib/mariobot.ts     the writing bot client, with the Genesis transport wired and waiting
+scraper/harvest.ts      Playwright home-feed harvester
+scraper/enrich.py       frames -> visual hook, audio -> spoken hook and transcript
+src/components/         the workbench UI
+scripts/cli.ts          CLI over the same database
 prisma/schema.prisma    accounts, posts, hooks, generations
-scraper/                Playwright harvester + Python enrichment worker
-src/app/                Next.js UI and API routes
-src/lib/outlier.ts      the scoring logic
-fixtures/               captured runs, for reproducible demos
-docs/                   design direction, open questions
+fixtures/               captured runs, so any demo is reproducible
+docs/                   design direction, demo notes, open questions
 ```
 
 ## Limitations

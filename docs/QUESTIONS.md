@@ -4,8 +4,10 @@ To send to `lukemiha@gmail.com`, subject `TEST PROJECT_JOHN MAHESWARAN`.
 
 ## Blocking — needed before the MarioBot step can be built
 
-1. **What is the exact request shape for the Mario-Bot slug?** I have the OpenRouter key and the instruction to "use Mario-Bot slug", but not the base URL, the model/slug string as it should appear in the request, or whether it's OpenAI-chat-compatible. A single working `curl` would unblock this immediately.
-2. **What does the Genesis API key authenticate?** Is it a separate Genesis-hosted endpoint that fronts MarioBot, or an alternative path to the same bot? Which of the two keys should the prototype actually use?
+1. **Where does the Mario-Bot slug live?** I checked: the OpenRouter key you sent is a standard inference key (valid, $500 limit, unused), and OpenRouter's model catalogue has no `mario` or `genesis` entry. So "Mario-Bot slug" is not an OpenRouter model id — it must be a slug on your own server. I need the base URL and one working `curl`.
+2. **What does the Genesis API key authenticate?** My assumption is that Genesis is the server hosting the bot and the OpenRouter key is what Genesis bills against, but that is a guess. Which key should the prototype send, and to which host?
+
+   The prototype is already wired for both. `MARIOBOT_TRANSPORT=genesis` plus `GENESIS_BASE_URL` switches it over — no other code changes. Until then it runs the OpenRouter path against Claude Haiku 4.5 so the whole loop is demonstrable end to end.
 3. **Does MarioBot already hold product/brand context server-side?** Part 2 of the Loom says "within our system, it'll already have access to information of the product". If that context lives with the bot, the prototype only sends the hook. If not, I need to send product context too, and I'd need that copy.
 
 ## Important — changes what gets built

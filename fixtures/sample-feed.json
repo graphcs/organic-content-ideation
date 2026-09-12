@@ -1,23 +1,216 @@
 {
-  "capturedAt": "2026-09-11T00:00:00Z",
-  "note": "Shape reference for the harvester output. Replaced by a real run in milestone 2.",
+  "capturedAt": "2026-09-09T18:04:00Z",
+  "sourceAccount": "burner primed for the testosterone / mens health market",
+  "note": "Shape is exactly what scraper/harvest.ts emits. Counts and copy are representative sample data, not a real harvest.",
   "posts": [
     {
-      "shortcode": "EXAMPLE001",
-      "url": "https://www.instagram.com/reel/EXAMPLE001/",
-      "handle": "example_creator",
+      "shortcode": "Dx7kQeRnM1a",
+      "url": "https://www.instagram.com/reel/Dx7kQeRnM1a/",
+      "handle": "thegreyzone.hrt",
+      "displayName": "The Grey Zone",
+      "followers": 41200,
       "mediaType": "reel",
+      "posterHue": 168,
+      "views": 402000,
+      "likes": 21400,
+      "comments": 1870,
+      "postedAt": "2026-09-08T13:10:00Z",
+      "baselineSample": [31000, 44000, 28000, 52000, 36000, 40000, 33000, 47000, 29000, 38000],
+      "hooks": {
+        "visual": "your doctor called this \"normal\"",
+        "audio": "Your doctor called it normal. Normal for who, exactly?",
+        "audioState": "speech",
+        "caption": "The reference range is built from a population that is, on average, sick. \"In range\" is not the same as optimal and it never was. Save this before your next panel.",
+        "body": "Your doctor called it normal. Normal for who, exactly? That reference range is built from whoever happened to walk into the lab that year, and most of them were tired, overweight and sleeping badly. So the bottom of the range is not health, it is the bottom of a sick population. You can be in range and feel like garbage, and every single doctor will tell you your labs are fine. Ask for the actual number. Then ask where that number sits for a healthy twenty five year old."
+      }
+    },
+    {
+      "shortcode": "Dx6mNbTpL9c",
+      "url": "https://www.instagram.com/reel/Dx6mNbTpL9c/",
+      "handle": "hormonehonest",
+      "displayName": "Hormone Honest",
+      "followers": 2340,
+      "mediaType": "reel",
+      "posterHue": 22,
       "views": 8200,
       "likes": 410,
       "comments": 37,
-      "postedAt": "2026-09-09T14:22:00Z",
-      "accountBaseline": { "value": 2150, "metric": "views", "n": 11 },
+      "postedAt": "2026-09-09T09:42:00Z",
+      "baselineSample": [1100, 1320, 980, 1450, 1210, 1180, 1390, 1050, 1240, 1160, 1300],
       "hooks": {
         "visual": "why you need to be SLAMMING carbs for fat loss",
         "audio": null,
         "audioState": "music",
-        "caption": "Nobody talks about this one",
+        "caption": "Nobody talks about this one. Sweet potato, white rice, honey, fruit. Eat the carbs.",
         "body": null
+      }
+    },
+    {
+      "shortcode": "Dx5rWkYqH2d",
+      "url": "https://www.instagram.com/reel/Dx5rWkYqH2d/",
+      "handle": "nightshiftgains",
+      "displayName": "Nightshift Gains",
+      "followers": 12800,
+      "mediaType": "reel",
+      "posterHue": 258,
+      "views": 57000,
+      "likes": 3100,
+      "comments": 244,
+      "postedAt": "2026-09-08T22:15:00Z",
+      "baselineSample": [8100, 9400, 7600, 11200, 9200, 8800, 10100],
+      "hooks": {
+        "visual": "the 4am cortisol trap",
+        "audio": "If you keep waking up at four in the morning, this is not insomnia.",
+        "audioState": "speech",
+        "caption": "Waking at 4am is a blood sugar problem dressed up as a sleep problem.",
+        "body": "If you keep waking up at four in the morning, this is not insomnia. Your blood sugar drops overnight, your body dumps cortisol to pull it back up, and cortisol wakes you. That is the whole mechanism. Cortisol up means testosterone down, every single night. Eat something before bed. A little honey, a little salt. Sounds too simple. Try it for four nights."
+      }
+    },
+    {
+      "shortcode": "Dx4jPfVmK8e",
+      "url": "https://www.instagram.com/reel/Dx4jPfVmK8e/",
+      "handle": "liftedandlean",
+      "displayName": "Lifted & Lean",
+      "followers": 198000,
+      "mediaType": "reel",
+      "posterHue": 8,
+      "views": 124000,
+      "likes": 8900,
+      "comments": 612,
+      "postedAt": "2026-09-09T07:30:00Z",
+      "baselineSample": [28000, 31000, 24000, 36000, 29500, 27000, 33000, 26000, 30000, 32000, 25000, 34000],
+      "hooks": {
+        "visual": "280 → 900 in 11 months. no TRT.",
+        "audio": "I got my testosterone from two eighty to nine hundred without touching TRT.",
+        "audioState": "speech",
+        "caption": "Everything I changed, in order of how much it mattered. Number three is the one nobody wants to hear.",
+        "body": "I got my testosterone from two eighty to nine hundred without touching TRT. Here is the order that actually mattered. One, I slept. Not eight hours in bed, eight hours asleep, which meant getting the phone out of the room. Two, I stopped running and started lifting heavy three times a week. Three, and this is the one nobody wants to hear, I got my body fat under fifteen percent. Fat tissue converts your testosterone into estrogen. You cannot supplement your way past that."
+      }
+    },
+    {
+      "shortcode": "Dx3hLcXnJ4f",
+      "url": "https://www.instagram.com/reel/Dx3hLcXnJ4f/",
+      "handle": "barbell.bishop",
+      "displayName": "Bishop",
+      "followers": 34500,
+      "mediaType": "reel",
+      "posterHue": 196,
+      "views": 19400,
+      "likes": 1420,
+      "comments": 98,
+      "postedAt": "2026-09-09T11:05:00Z",
+      "baselineSample": [8200, 9600, 7400, 10400, 8900, 9100, 8000, 11000],
+      "hooks": {
+        "visual": "POV: you finally fixed your sleep",
+        "audio": "Six weeks of actually sleeping and I do not recognise myself.",
+        "audioState": "speech",
+        "caption": "Six weeks. Same training, same food. The only thing that changed was bedtime.",
+        "body": "Six weeks of actually sleeping and I do not recognise myself. Same programme, same calories, same job. I just went to bed at ten instead of one. Morning wood came back in week two. Strength went up in week three without adding a single set. Everyone wants the supplement stack. The stack is a dark room and a consistent bedtime."
+      }
+    },
+    {
+      "shortcode": "Dx2gKbWmI3g",
+      "url": "https://www.instagram.com/reel/Dx2gKbWmI3g/",
+      "handle": "coach.deandre",
+      "displayName": "Coach DeAndre",
+      "followers": 22100,
+      "mediaType": "reel",
+      "posterHue": 42,
+      "views": 31000,
+      "likes": 1980,
+      "comments": 176,
+      "postedAt": "2026-09-08T16:48:00Z",
+      "baselineSample": [13000, 16200, 11800, 18000, 14800, 15400, 12600, 17100, 14000],
+      "hooks": {
+        "visual": "your morning routine is castrating you",
+        "audio": "Coffee on an empty stomach at six a.m. is not a morning routine, it is a stress response.",
+        "audioState": "speech",
+        "caption": "Coffee before food is a cortisol spike with a marketing team.",
+        "body": "Coffee on an empty stomach at six a.m. is not a morning routine, it is a stress response you have learned to enjoy. Cortisol is already peaking when you wake up. You are pouring caffeine on top of it, then wondering why you crash at eleven and cannot sleep at eleven thirty. Eat first. Wait ninety minutes. Then have the coffee. You will not believe how different the afternoon feels."
+      }
+    },
+    {
+      "shortcode": "Dx1fJaVlH2h",
+      "url": "https://www.instagram.com/p/Dx1fJaVlH2h/",
+      "handle": "themorningstack",
+      "displayName": "The Morning Stack",
+      "followers": 8900,
+      "mediaType": "image",
+      "posterHue": 88,
+      "views": null,
+      "likes": 890,
+      "comments": 64,
+      "postedAt": "2026-09-09T08:20:00Z",
+      "baselineSample": [610, 720, 540, 810, 640, 690, 580, 750, 620, 660, 700, 600],
+      "hooks": {
+        "visual": "3 supplements I'd never take again",
+        "audio": null,
+        "audioState": "silent",
+        "caption": "Spent four years and about six grand finding this out. Tribulus, DAA, and any \"test booster\" with a proprietary blend. Save your money and buy food.",
+        "body": null
+      }
+    },
+    {
+      "shortcode": "Dx0eIzUkG1i",
+      "url": "https://www.instagram.com/p/Dx0eIzUkG1i/",
+      "handle": "mensdeskdiet",
+      "displayName": "Desk Diet",
+      "followers": 51000,
+      "mediaType": "carousel",
+      "posterHue": 320,
+      "views": null,
+      "likes": 2100,
+      "comments": 118,
+      "postedAt": "2026-09-08T19:55:00Z",
+      "baselineSample": [1680, 1920, 1540, 2050, 1750, 1810, 1620, 1980, 1700, 1870, 1590, 1760],
+      "hooks": {
+        "visual": "what 9 hours at a desk does to your hormones",
+        "audio": null,
+        "audioState": "silent",
+        "caption": "Swipe for the eight hour version and the four hour version. The gap is not small.",
+        "body": null
+      }
+    },
+    {
+      "shortcode": "DwZdHyTjF0j",
+      "url": "https://www.instagram.com/reel/DwZdHyTjF0j/",
+      "handle": "dailytlevels",
+      "displayName": "Daily T",
+      "followers": 6700,
+      "mediaType": "reel",
+      "posterHue": 148,
+      "views": 1200,
+      "likes": 74,
+      "comments": 6,
+      "postedAt": "2026-09-09T10:12:00Z",
+      "baselineSample": [1180, 1420, 1050, 1610, 1350, 1290, 1480, 1120, 1520, 1240],
+      "hooks": {
+        "visual": "zinc timing matters more than zinc dose",
+        "audio": "Everyone takes zinc in the morning and that is the worst time for it.",
+        "audioState": "speech",
+        "caption": "Take it at night, away from calcium. That's it, that's the post.",
+        "body": "Everyone takes zinc in the morning and that is the worst time for it. Zinc and calcium compete for the same absorption pathway, and your breakfast is usually the calcium heavy meal. Move it to bedtime, on its own. Same dose, meaningfully more of it actually gets in."
+      }
+    },
+    {
+      "shortcode": "DwYcGxSiE9k",
+      "url": "https://www.instagram.com/reel/DwYcGxSiE9k/",
+      "handle": "rawprotocol",
+      "displayName": "Raw Protocol",
+      "followers": null,
+      "mediaType": "reel",
+      "posterHue": 12,
+      "views": null,
+      "likes": null,
+      "comments": 41,
+      "postedAt": "2026-09-09T12:40:00Z",
+      "baselineSample": [],
+      "hooks": {
+        "visual": "stop eating the seed oils. all of them.",
+        "audio": "I am going to lose followers for this one.",
+        "audioState": "speech",
+        "caption": "Comment RAW and I'll send you the list.",
+        "body": "I am going to lose followers for this one. Every restaurant meal you eat is cooked in the cheapest oil on the shelf, and the cheapest oil on the shelf is not olive. You are not eating badly at home. You are eating fine at home and then eating four hundred grams of soybean oil a week in places you did not choose."
       }
     }
   ]

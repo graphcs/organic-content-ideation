@@ -58,6 +58,9 @@ export function computeBaseline(recent: PostCounts[]): Baseline {
   return { value, metric, n: values.length };
 }
 
+/** Shared by the score's own explanation and by every label that renders it. */
+const fmt = (m: number): string => (m >= 10 ? `${Math.round(m)}x` : `${m.toFixed(1)}x`);
+
 export function scorePost(counts: PostCounts, baseline: Baseline): OutlierScore {
   if (baseline.metric === "none" || baseline.value <= 0) {
     return {
@@ -90,9 +93,29 @@ export function scorePost(counts: PostCounts, baseline: Baseline): OutlierScore 
     confidence,
     reason:
       confidence === "high"
-        ? `${multiple.toFixed(1)}x the median of ${baseline.n} recent posts.`
-        : `${multiple.toFixed(1)}x, but only ${baseline.n} post${
+        ? `${fmt(multiple)} the median of ${baseline.n} recent posts.`
+        : `${fmt(multiple)}, but only ${baseline.n} post${
             baseline.n === 1 ? "" : "s"
           } to compare against.`,
   };
+}
+
+/**
+ * Baseline from a raw sample of an account's recent posts on a single metric.
+ * Used by the harvester (which reads counts off the author's grid) and by the
+ * fixture loader, both of which already know which metric they collected.
+ */
+export function baselineFromSample(sample: number[], metric: Metric): Baseline {
+  const values = sample.filter((v) => typeof v === "number" && v > 0).sort((a, b) => a - b);
+  if (values.length === 0 || metric === "none") {
+    return { value: 0, metric: "none", n: 0 };
+  }
+  const mid = Math.floor(values.length / 2);
+  const value =
+    values.length % 2 === 0 ? (values[mid - 1] + values[mid]) / 2 : values[mid];
+  return { value, metric, n: values.length };
+}
+
+export function formatMultiple(multiple: number | null): string {
+  return multiple === null ? "—" : fmt(multiple);
 }

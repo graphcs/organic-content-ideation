@@ -21,6 +21,8 @@ model Account {
   baselineMetric String  @default("none")
   /// How many posts the median was taken over. Small samples widen the band.
   baselineN      Int     @default(0)
+  /// The raw recent-post counts the median was taken over, JSON-encoded. Drawn as the sparkline.
+  baselineSample String  @default("[]")
   baselineAt     DateTime?
 
   posts     Post[]
@@ -37,6 +39,8 @@ model Post {
   mediaType   String  // "reel" | "image" | "carousel"
   thumbnailUrl String?
   videoUrl    String?
+  /// Deterministic hue for the placeholder frame when no thumbnail was captured.
+  posterHue   Int     @default(180)
   postedAt    DateTime?
 
   views    Int?

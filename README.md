@@ -98,7 +98,12 @@ npm run test:harvest     # the feed payload walker, against captured response sh
 npm run test:smoke       # a real browser against a running dev server
 ```
 
-`test:smoke` needs `npm run dev` running. These are the checks that caught actual
+`test:smoke` needs `npm run dev` running, or point it at the deployed demo:
+
+```bash
+SMOKE_URL=https://organic-content-ideation.vercel.app npm run test:smoke
+```
+ These are the checks that caught actual
 bugs while building — switching posts must swap every field, long transcripts must
 not be clipped, and typing `x` in a caption must not reject the post.
 

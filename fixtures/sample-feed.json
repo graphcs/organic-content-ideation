@@ -1,0 +1,24 @@
+{
+  "capturedAt": "2026-09-11T00:00:00Z",
+  "note": "Shape reference for the harvester output. Replaced by a real run in milestone 2.",
+  "posts": [
+    {
+      "shortcode": "EXAMPLE001",
+      "url": "https://www.instagram.com/reel/EXAMPLE001/",
+      "handle": "example_creator",
+      "mediaType": "reel",
+      "views": 8200,
+      "likes": 410,
+      "comments": 37,
+      "postedAt": "2026-09-09T14:22:00Z",
+      "accountBaseline": { "value": 2150, "metric": "views", "n": 11 },
+      "hooks": {
+        "visual": "why you need to be SLAMMING carbs for fat loss",
+        "audio": null,
+        "audioState": "music",
+        "caption": "Nobody talks about this one",
+        "body": null
+      }
+    }
+  ]
+}

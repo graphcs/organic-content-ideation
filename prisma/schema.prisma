@@ -1,0 +1,101 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+/// An Instagram author whose post appeared in the feed.
+model Account {
+  id          String  @id @default(cuid())
+  handle      String  @unique
+  displayName String?
+  followers   Int?
+  isPrivate   Boolean @default(false)
+
+  /// Median engagement across recent posts — the denominator of the outlier multiple.
+  baseline       Float?
+  /// Which metric the baseline was built from: "views" | "likes" | "none".
+  baselineMetric String  @default("none")
+  /// How many posts the median was taken over. Small samples widen the band.
+  baselineN      Int     @default(0)
+  baselineAt     DateTime?
+
+  posts     Post[]
+  createdAt DateTime @default(now())
+}
+
+model Post {
+  id        String  @id @default(cuid())
+  shortcode String  @unique
+  url       String
+  accountId String
+  account   Account @relation(fields: [accountId], references: [id])
+
+  mediaType   String  // "reel" | "image" | "carousel"
+  thumbnailUrl String?
+  videoUrl    String?
+  postedAt    DateTime?
+
+  views    Int?
+  likes    Int?
+  comments Int?
+
+  /// engagement / account.baseline. Null when the baseline is unknown.
+  outlierMultiple Float?
+  /// Metric the multiple was computed from, so incomparable numbers are never blended.
+  outlierMetric   String?
+
+  /// Triage state: "new" | "saved" | "rejected".
+  status String @default("new")
+  notes  String?
+
+  hooks       Hook?
+  generations Generation[]
+
+  harvestedAt DateTime @default(now())
+
+  @@index([outlierMultiple])
+  @@index([status])
+}
+
+/// The four fields the strategist captures by hand today.
+model Hook {
+  id     String @id @default(cuid())
+  postId String @unique
+  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  /// Text burned into the opening frame.
+  visual     String?
+  /// First spoken sentence. Null with audioState "music" or "silent".
+  audio      String?
+  audioState String  @default("unknown") // "speech" | "music" | "silent" | "unknown"
+  caption    String?
+  /// Full transcript where speech exists.
+  body       String?
+
+  /// True once a human has touched any field, so re-enrichment never overwrites edits.
+  editedByUser Boolean @default(false)
+  extractedAt  DateTime?
+  updatedAt    DateTime @updatedAt
+}
+
+/// One MarioBot call and its response.
+model Generation {
+  id     String @id @default(cuid())
+  postId String
+  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  prompt   String
+  response String?
+  model    String?
+  status   String @default("streaming") // "streaming" | "complete" | "error"
+  error    String?
+
+  createdAt   DateTime  @default(now())
+  completedAt DateTime?
+
+  @@index([postId])
+}

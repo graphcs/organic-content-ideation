@@ -1,0 +1,261 @@
+<title>Outlier Workbench</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,300;6..72,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ground: #F2F3F0;
+    --card: #FFFFFF;
+    --rule: #D5D8D2;
+    --ink: #0E2B25;
+    --muted: #5E6B66;
+    --signal: #B5179E;
+    --sans: "Archivo", ui-sans-serif, system-ui, sans-serif;
+    --serif: "Newsreader", Georgia, serif;
+  }
+  :root:not([data-theme="light"]) { color-scheme: light; }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--ground); color: var(--ink);
+    font-family: var(--sans); font-size: 14px; line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3 { margin: 0; font-weight: 600; letter-spacing: -0.015em; }
+
+  .masthead {
+    display: flex; align-items: baseline; gap: 14px;
+    padding: 14px 20px; border-bottom: 1px solid var(--rule);
+  }
+  .masthead h1 { font-size: 15px; }
+  .masthead p { margin: 0; color: var(--muted); font-size: 13px; }
+  .masthead .spacer { flex: 1; }
+  .masthead .run {
+    font-size: 13px; color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .workbench {
+    display: grid;
+    grid-template-columns: 300px minmax(0, 1fr) 340px;
+    min-height: calc(100vh - 50px);
+  }
+  .col { padding: 18px 20px; }
+  .col + .col { border-left: 1px solid var(--rule); }
+
+  .colhead {
+    display: flex; align-items: baseline; justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .colhead h2 { font-size: 13px; }
+  .colhead span { color: var(--muted); font-size: 12px; }
+
+  /* ── queue ─────────────────────────────────────── */
+  .queue { list-style: none; margin: 0; padding: 0; }
+  .queue li {
+    display: grid; grid-template-columns: 40px minmax(0,1fr) auto;
+    gap: 10px; align-items: center;
+    padding: 9px 8px; margin: 0 -8px;
+    border-radius: 3px; cursor: pointer;
+  }
+  .queue li:hover { background: rgba(14,43,37,.045); }
+  .queue li[aria-current="true"] { background: var(--card); box-shadow: inset 2px 0 0 var(--signal); }
+  .queue .thumb {
+    width: 40px; height: 53px; border-radius: 2px;
+    background: linear-gradient(150deg, #c9cfc9, #9aa79f);
+  }
+  .queue .who { min-width: 0; }
+  .queue .who b { display: block; font-weight: 500; font-size: 13px; }
+  .queue .who span {
+    display: block; color: var(--muted); font-size: 12px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .mult {
+    font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums;
+    color: var(--muted);
+  }
+  .mult.hot { color: var(--signal); }
+  .mult.none { font-weight: 400; font-size: 12px; }
+
+  /* ── specimen ──────────────────────────────────── */
+  .specimen { display: grid; grid-template-columns: 190px minmax(0,1fr); gap: 24px; }
+  .frame {
+    aspect-ratio: 9/16; border-radius: 3px;
+    background: linear-gradient(150deg, #c9cfc9, #8d9a92);
+    display: grid; place-items: end stretch; padding: 14px;
+  }
+  .frame p {
+    margin: 0; color: #fff; font-family: var(--sans);
+    font-weight: 700; font-size: 15px; line-height: 1.2;
+    text-shadow: 0 1px 6px rgba(0,0,0,.5);
+  }
+
+  .verdict { margin-bottom: 22px; }
+  .verdict .big {
+    font-size: 54px; font-weight: 700; line-height: 1;
+    letter-spacing: -0.03em; color: var(--signal);
+    font-variant-numeric: tabular-nums;
+  }
+  .verdict .why { margin: 6px 0 0; color: var(--muted); font-size: 13px; max-width: 46ch; }
+  .spark { display: flex; align-items: flex-end; gap: 3px; height: 34px; margin-top: 12px; }
+  .spark i { width: 7px; background: var(--rule); border-radius: 1px; }
+  .spark i.peak { background: var(--signal); }
+
+  .field { padding: 14px 0; border-top: 1px solid var(--rule); }
+  .field h3 { font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 6px; }
+  .field .said {
+    font-family: var(--serif); font-size: 24px; line-height: 1.35;
+    font-weight: 400; margin: 0; max-width: 52ch;
+  }
+  .field .said.quiet { font-size: 17px; color: var(--muted); }
+  .field .prose {
+    font-family: var(--serif); font-size: 17px; line-height: 1.65;
+    margin: 0; max-width: 62ch;
+  }
+
+  /* ── writing ───────────────────────────────────── */
+  .prompt {
+    width: 100%; border: 1px solid var(--rule); border-radius: 3px;
+    background: var(--card); padding: 10px; font: inherit; color: inherit;
+    resize: vertical; min-height: 76px;
+  }
+  .prompt:focus-visible { outline: 2px solid var(--signal); outline-offset: 1px; }
+  .write {
+    margin-top: 10px; width: 100%; border: 0; border-radius: 3px;
+    background: var(--signal); color: #fff; font: inherit; font-weight: 600;
+    padding: 10px; cursor: pointer;
+  }
+  .write:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+  .stream { margin-top: 18px; border-top: 1px solid var(--rule); padding-top: 14px; }
+  .stream ol { margin: 0; padding-left: 1.3em; }
+  .stream li { font-family: var(--serif); font-size: 16px; line-height: 1.5; margin-bottom: 9px; }
+  .caret {
+    display: inline-block; width: 7px; height: 15px;
+    background: var(--signal); vertical-align: -2px;
+    animation: blink 1.1s steps(2) infinite;
+  }
+  @keyframes blink { 50% { opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) { .caret { animation: none; } }
+
+  .keys {
+    margin-top: 20px; padding-top: 12px; border-top: 1px solid var(--rule);
+    color: var(--muted); font-size: 12px;
+  }
+  .keys kbd {
+    font: inherit; font-weight: 600; color: var(--ink);
+    border: 1px solid var(--rule); border-radius: 2px; padding: 0 4px;
+    background: var(--card);
+  }
+
+  @media (max-width: 1100px) {
+    .workbench { grid-template-columns: 260px minmax(0,1fr); }
+    .col:nth-child(3) { grid-column: 1 / -1; border-left: 0; border-top: 1px solid var(--rule); }
+  }
+  @media (max-width: 700px) {
+    .workbench { grid-template-columns: 1fr; }
+    .col + .col { border-left: 0; border-top: 1px solid var(--rule); }
+    .specimen { grid-template-columns: 1fr; }
+    .frame { max-width: 190px; }
+  }
+</style>
+
+<header class="masthead">
+  <h1>Outlier Workbench</h1>
+  <p>Testosterone market feed</p>
+  <span class="spacer"></span>
+  <span class="run">10 posts harvested 4 minutes ago</span>
+</header>
+
+<div class="workbench">
+  <section class="col">
+    <div class="colhead"><h2>Queue</h2><span>by multiple</span></div>
+    <ul class="queue">
+      <li aria-current="true">
+        <span class="thumb"></span>
+        <span class="who"><b>@hormonehonest</b><span>Reel · 8.2K views</span></span>
+        <span class="mult hot">6.8×</span>
+      </li>
+      <li>
+        <span class="thumb"></span>
+        <span class="who"><b>@liftedandlean</b><span>Reel · 12.4K views</span></span>
+        <span class="mult hot">4.2×</span>
+      </li>
+      <li>
+        <span class="thumb"></span>
+        <span class="who"><b>@coach.deandre</b><span>Reel · 3.1K views</span></span>
+        <span class="mult">2.1×</span>
+      </li>
+      <li>
+        <span class="thumb"></span>
+        <span class="who"><b>@themorningstack</b><span>Image · 890 likes</span></span>
+        <span class="mult">1.4×</span>
+      </li>
+      <li>
+        <span class="thumb"></span>
+        <span class="who"><b>@rawprotocol</b><span>Reel · counts hidden</span></span>
+        <span class="mult none">unscored</span>
+      </li>
+      <li>
+        <span class="thumb"></span>
+        <span class="who"><b>@dailytlevels</b><span>Reel · 1.2K views</span></span>
+        <span class="mult">0.9×</span>
+      </li>
+    </ul>
+    <p class="keys"><kbd>j</kbd> <kbd>k</kbd> move · <kbd>s</kbd> save · <kbd>x</kbd> reject</p>
+  </section>
+
+  <section class="col">
+    <div class="colhead"><h2>@hormonehonest</h2><span>posted 2 days ago</span></div>
+    <div class="specimen">
+      <div class="frame"><p>why you need to be SLAMMING carbs for fat loss</p></div>
+      <div>
+        <div class="verdict">
+          <div class="big">6.8×</div>
+          <div class="spark">
+            <i style="height:31%"></i><i style="height:24%"></i><i style="height:38%"></i>
+            <i style="height:29%"></i><i style="height:22%"></i><i style="height:41%"></i>
+            <i style="height:27%"></i><i style="height:100%" class="peak"></i>
+            <i style="height:33%"></i><i style="height:26%"></i><i style="height:35%"></i>
+          </div>
+          <p class="why">6.8× the median of 11 recent posts on this account. Measured on views.</p>
+        </div>
+
+        <div class="field">
+          <h3>Visual hook</h3>
+          <p class="said">why you need to be SLAMMING carbs for fat loss</p>
+        </div>
+
+        <div class="field">
+          <h3>Audio hook</h3>
+          <p class="said quiet">Music only — no spoken hook in this clip.</p>
+        </div>
+
+        <div class="field">
+          <h3>Caption</h3>
+          <p class="prose">Nobody talks about this one. Save it before it gets taken down.</p>
+        </div>
+
+        <div class="field">
+          <h3>Body</h3>
+          <p class="prose">No transcript — the clip is a text overlay over a lifting montage with a trending audio bed.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="col">
+    <div class="colhead"><h2>Writing</h2><span>Mario-Bot</span></div>
+    <label for="p" style="display:block;font-size:12px;color:var(--muted);margin-bottom:6px">Prompt</label>
+    <textarea class="prompt" id="p">Please write me 10 hooks based on this idea: why you need to be slamming carbohydrates for fat loss.</textarea>
+    <button class="write">Write copy</button>
+
+    <div class="stream">
+      <ol>
+        <li>Everyone told you carbs were the enemy. Your bloodwork disagrees.</li>
+        <li>The fat loss mistake that also tanked your testosterone.</li>
+        <li>I cut carbs for 90 days. Here's what it cost me.</li>
+        <li>Why the leanest guys in the gym eat the most rice<span class="caret"></span></li>
+      </ol>
+    </div>
+  </section>
+</div>

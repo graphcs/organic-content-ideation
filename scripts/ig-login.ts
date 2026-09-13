@@ -1,6 +1,9 @@
+import "./env";
 import { login } from "../scraper/harvest";
 
-login().catch((err) => {
-  console.error(err instanceof Error ? err.message : err);
-  process.exit(1);
-});
+login()
+  .then(() => process.exit(0))
+  .catch((err) => {
+    console.error(`\n${err instanceof Error ? err.message : err}\n`);
+    process.exit(1);
+  });

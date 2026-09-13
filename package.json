@@ -10,6 +10,7 @@
     "seed": "tsx scripts/seed.ts",
     "cli": "tsx scripts/cli.ts",
     "ig:login": "tsx scripts/ig-login.ts",
+    "ig:status": "tsx scripts/ig-status.ts",
     "ig:harvest": "tsx scripts/ig-harvest.ts",
     "enrich": "./.venv/bin/python scraper/enrich.py",
     "test:smoke": "tsx test/smoke.ts",

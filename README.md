@@ -46,9 +46,14 @@ installs (PEP 668). `npm run enrich` uses `.venv` when it exists.
 One-time, and a human does the login:
 
 ```bash
-npm run ig:login    # opens Chromium, log in by hand including 2FA, then close
-npm run ig:harvest -- --limit 10
+npm run ig:login                  # opens Chromium; log in by hand, 2FA included, then close
+npm run ig:status                 # confirms the session is live, and whose it is
+npm run ig:harvest -- --limit=10
 ```
+
+`ig:status` exists because a dead session fails quietly: Instagram serves its login
+form at the feed URL without redirecting, so a logged-out harvest returns nothing
+and looks like an empty feed rather than an expired login.
 
 The session persists in `.ig-profile/` (gitignored). Use a burner account, not a business one — see the risk section of [`PLAN.md`](PLAN.md).
 

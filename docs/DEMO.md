@@ -39,6 +39,7 @@ Each run is also written to `fixtures/feed-<timestamp>.json`, so any harvest can
 | Enrichment: audio hooks and transcripts | **Verified** against generated speech, music-only and silent clips — all three classified correctly |
 | Enrichment: visual hooks from frames | Frame extraction verified; the vision call itself needs an `ANTHROPIC_API_KEY`, and degrades to "keep what is there" without one |
 | Harvester: feed payload parser | Verified against captured response shapes — `npm run test:harvest` |
+| Harvester: session detection | Verified — correctly reports a logged-out profile, and refuses to harvest rather than returning an empty feed |
 | Harvester: the live scroll | **Not run against a live account.** No Instagram account is connected yet — this needs the burner decision in `docs/QUESTIONS.md` |
 
 The last row is stated plainly rather than glossed. Everything above it has been executed; that one has not, because the account the brief asks for does not exist yet.
@@ -52,3 +53,4 @@ Worth listing, because they are the kind that survive a demo and surface a week 
 3. **Switching posts left the previous post's text on screen.** The editable fields used `defaultValue`, which React only reads once — so the header said one account and the hooks belonged to another. The single worst bug for a tool whose entire job is reading the right hooks.
 4. **Long captions and transcripts were clipped to one line.** The autosizing field measured its height before the web font loaded, then never re-measured.
 5. **`export --format=md` silently returned JSON.** The flag parser only looked at arguments after the first two positions.
+6. **A logged-out session read as logged in.** Instagram serves its login form at the feed URL without redirecting, so checking the address for `/accounts/login` never fired. A dead session would have produced an empty harvest that looked like a quiet feed.

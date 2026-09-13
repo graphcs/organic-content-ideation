@@ -27,6 +27,7 @@
 
 import type { BrowserContext, Page } from "patchright";
 import { mkdirSync, writeFileSync } from "node:fs";
+import { apifyEnabled, fetchAccountMetrics } from "./baselines";
 
 const PROFILE_DIR = ".ig-profile";
 const FEED_URL = "https://www.instagram.com/";
@@ -57,6 +58,10 @@ export interface HarvestedPost {
 }
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+/** Playwright's default UA advertises HeadlessChrome on some builds, even headed. */
+const USER_AGENT =
+  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36";
 const between = ([lo, hi]: [number, number]) => lo + Math.random() * (hi - lo);
 
 /** Stable-ish hue per handle so a post keeps its colour across runs. */
@@ -85,19 +90,60 @@ export async function openSession(): Promise<BrowserContext> {
     headless: false,
     viewport: { width: 1280, height: 900 },
     // Default Playwright UA advertises HeadlessChrome even when headed on some builds.
-    userAgent:
-      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+    userAgent: USER_AGENT,
   });
 }
 
-/** One-time manual login. The human does the password and the 2FA; we just wait. */
-export async function login(): Promise<void> {
-  const ctx = await openSession();
+/**
+ * One-time manual login. The human does the password and the 2FA.
+ *
+ * It waits for the login to actually succeed rather than for the window to be
+ * closed: "close it when you're done" puts the burden of judging success on the
+ * person, and closing a moment too early leaves a profile directory that looks
+ * valid and holds no session — which is exactly what happened the first time.
+ */
+export async function login(timeoutMs = 5 * 60 * 1000): Promise<{ handle: string | null }> {
+  const chromium = await browser();
+  const ctx = await chromium.launchPersistentContext(PROFILE_DIR, {
+    headless: false,
+    viewport: { width: 1280, height: 900 },
+    userAgent: USER_AGENT,
+  });
   const page = ctx.pages()[0] ?? (await ctx.newPage());
+
+  let windowClosed = false;
+  page.on("close", () => {
+    windowClosed = true;
+  });
+
   await page.goto(FEED_URL, { waitUntil: "domcontentloaded" });
-  console.log("\nLog in by hand, including 2FA. Close the browser window when the feed has loaded.\n");
-  await page.waitForEvent("close", { timeout: 0 }).catch(() => {});
-  await ctx.close();
+  console.log("\nLog in by hand, including 2FA. Leave the window open — this will");
+  console.log("notice when you are through and close it for you.\n");
+
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    if (windowClosed) {
+      await ctx.close().catch(() => {});
+      throw new Error("The window was closed before the login finished. Nothing was saved — run it again.");
+    }
+
+    try {
+      if (!(await isLoggedOut(page))) {
+        const handle = await currentHandle(page);
+        // Give Chromium a moment to flush the session cookies to the profile.
+        await sleep(2000);
+        await ctx.close();
+        console.log(`Logged in${handle ? ` as @${handle}` : ""}. Session saved to ${PROFILE_DIR}/.\n`);
+        return { handle };
+      }
+    } catch {
+      // Mid-navigation; the page will settle and the next pass will read it.
+    }
+    await sleep(2000);
+  }
+
+  await ctx.close().catch(() => {});
+  throw new Error("Timed out waiting for the login. Nothing was saved — run it again.");
 }
 
 /**
@@ -181,6 +227,46 @@ async function baselineFor(page: Page, handle: string): Promise<number[]> {
   return likes.slice(0, 12);
 }
 
+/** The handle is only reliably readable off the nav avatar's alt text. */
+async function currentHandle(page: Page): Promise<string | null> {
+  return page
+    .locator('img[alt*="profile picture"]')
+    .first()
+    .getAttribute("alt", { timeout: 5000 })
+    .then((alt) => alt?.match(/^(.+?)'s profile picture/)?.[1] ?? null)
+    .catch(() => null);
+}
+
+/**
+ * Logged out, Instagram serves the login form at the feed URL itself and never
+ * redirects, so checking for "/accounts/login" in the address reports a dead
+ * session as a live one. Look for the password field instead.
+ */
+async function isLoggedOut(page: Page): Promise<boolean> {
+  if (page.url().includes("/accounts/login")) return true;
+  return (await page.locator('input[type="password"]').count()) > 0;
+}
+
+/**
+ * Report whether the saved session is still good, without scrolling anything.
+ * Runs headless — this is a status check, not a harvest.
+ */
+export async function sessionStatus(): Promise<{ loggedIn: boolean; handle: string | null }> {
+  const chromium = await browser();
+  const ctx = await chromium.launchPersistentContext(PROFILE_DIR, { headless: true });
+  const page = ctx.pages()[0] ?? (await ctx.newPage());
+
+  try {
+    await page.goto(FEED_URL, { waitUntil: "domcontentloaded", timeout: 30000 });
+    await sleep(2500);
+
+    if (await isLoggedOut(page)) return { loggedIn: false, handle: null };
+    return { loggedIn: true, handle: await currentHandle(page) };
+  } finally {
+    await ctx.close();
+  }
+}
+
 export async function harvest(opts: HarvestOptions): Promise<HarvestedPost[]> {
   const dwell = opts.dwellMs ?? [1800, 3600];
   const ctx = await openSession();
@@ -200,9 +286,11 @@ export async function harvest(opts: HarvestOptions): Promise<HarvestedPost[]> {
   await page.goto(FEED_URL, { waitUntil: "domcontentloaded" });
   await sleep(3000);
 
-  if (page.url().includes("/accounts/login")) {
+  if (await isLoggedOut(page)) {
     await ctx.close();
-    throw new Error("Not logged in. Run `npm run ig:login` first.");
+    throw new Error(
+      "Not logged in — Instagram is showing the login form. Run `npm run ig:login` first, then `npm run ig:status` to confirm.",
+    );
   }
 
   // Scroll at something like reading speed until we have enough, or we stop
@@ -237,12 +325,47 @@ export async function harvest(opts: HarvestOptions): Promise<HarvestedPost[]> {
 
   if (!opts.skipBaselines) {
     const handles = [...new Set(posts.map((p) => p.handle))];
+    const viaApify = apifyEnabled();
+    console.log(
+      viaApify
+        ? `\nBaselines for ${handles.length} accounts via Apify — the burner never visits them.`
+        : `\nBaselines for ${handles.length} accounts by visiting each profile. Set APIFY_TOKEN to do this off-session instead.`,
+    );
+
     for (const handle of handles) {
-      process.stdout.write(`  baseline for @${handle}… `);
-      const sample = await baselineFor(page, handle);
-      console.log(sample.length ? `${sample.length} posts` : "no visible counts");
+      process.stdout.write(`  @${handle}… `);
+      let sample: number[] = [];
+
+      if (viaApify) {
+        try {
+          const metrics = await fetchAccountMetrics(handle);
+          const recent = metrics?.posts ?? [];
+          const useViews = recent.filter((r) => r.views !== null).length >= 3;
+          sample = recent
+            .map((r) => (useViews ? r.views : r.likes))
+            .filter((v): v is number => typeof v === "number");
+
+          // Both halves of the ratio should come from the same viewing context:
+          // logged-out Instagram hides metrics that the logged-in feed shows.
+          for (const post of posts) {
+            const match = recent.find((r) => r.shortcode === post.shortcode);
+            if (!match) continue;
+            if (useViews && match.views !== null) post.views = match.views;
+            if (!useViews && match.likes !== null) post.likes = match.likes;
+          }
+          console.log(`${sample.length} posts (apify)`);
+        } catch (err) {
+          console.log(`apify failed (${err instanceof Error ? err.message : err}) — falling back`);
+          sample = await baselineFor(page, handle);
+          await sleep(between(dwell));
+        }
+      } else {
+        sample = await baselineFor(page, handle);
+        await sleep(between(dwell));
+      }
+
+      if (!sample.length) console.log("no visible counts");
       for (const post of posts) if (post.handle === handle) post.baselineSample = sample;
-      await sleep(between(dwell));
     }
   }
 

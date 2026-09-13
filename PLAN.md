@@ -67,7 +67,7 @@ A headed Chromium instance with a persistent user-data directory. The account is
 | Option | Sees home feed? | Ban risk | Cost | Verdict |
 |---|---|---|---|---|
 | Graph API | No | None | Free | Wrong surface entirely |
-| Apify / Bright Data | No (profiles/hashtags only) | Low | $30–50/mo | Misses the premise |
+| Apify / Bright Data | No (profiles/hashtags only) | Low | see below | Misses the premise — but see the hybrid |
 | Private mobile API (instagrapi etc.) | Yes | **High** — unofficial signed endpoints, known ban vector | Free | Fastest to break, worst risk |
 | **Playwright, real session** | **Yes** | **Moderate** | Free | Chosen |
 | Chrome extension on the strategist's own browsing | Yes | Lowest | Free | Best long-term; too many moving parts for a prototype demo |
@@ -79,6 +79,20 @@ A headed Chromium instance with a persistent user-data directory. The account is
 - **Plain Playwright** is trivially fingerprinted. Instagram checks. So the harvester runs on **patchright**, a drop-in patched Playwright that closes the well-known CDP leaks, and falls back to stock Playwright with a warning if it is not installed.
 
 Stealth only stops you being identified as automation. It does nothing about *behaving* like a bot, which is the larger risk and is handled by pacing — see below.
+
+### The hybrid: session for discovery, Apify for metrics
+
+Checked rather than assumed. No actor in Apify's store reads a logged-in home feed; their first-party scraper works from the logged-out page and takes only profile, hashtag and post URLs. A handful of community actors accept a session cookie, but the general-purpose one shows 4,718 failed runs against 1,477 succeeded over thirty days. Apify cannot replace the session.
+
+It can, however, take over the most expensive part of a harvest. Scoring an outlier needs the author's recent posts as a denominator, which means visiting every unique author's grid — roughly tripling the automated requests a ten-post harvest makes from the burner account. Request volume, not scrolling, is what gets accounts limited. Those profiles are public data, so there is no reason to spend the burner's risk budget on them.
+
+So the split is: **the logged-in session discovers which posts are in the feed; Apify supplies the numbers.** The burner does only the thing a human does anyway — scroll. `apify/instagram-scraper` returns exact integers (`videoPlayCount`, `videoViewCount`, `likesCount`), not rendered strings like "402K".
+
+There is a methodological trap here worth naming. Instagram shows logged-in viewers metrics it hides from logged-out ones, so a numerator read from the feed and a denominator read from Apify are not strictly comparable, and the ratio between them would be quietly wrong. When Apify is in use the harvester therefore takes the post's *own* count from the Apify sample as well, so both halves of the multiple come from the same viewing context.
+
+Two details that bite: `likesCount` comes back as **`-1`** when a creator has hidden engagement, which must read as "unknown" rather than as a number; and `videoPlayCount` and `videoViewCount` are different figures for the same reel. Both are handled and tested.
+
+**Cost.** About 120 items per ten-author harvest: **$0.32** on the free tier, $0.23 on Scale. The free plan's $5/month allowance covers roughly fifteen harvests. Set `APIFY_TOKEN` to switch it on; unset, it falls back to visiting profiles from the session and costs nothing but risk.
 
 **Risks, stated plainly:**
 
@@ -173,6 +187,7 @@ Ranked by what demonstrates understanding of the workflow, which is what the bri
 |---|---|---|---|
 | OpenRouter / MarioBot | Copy generation | Client's key | Per call, client's account |
 | Claude API (vision) | Visual hook extraction from frames | ~$2–5 for the whole build | Yes, per post if used in production |
+| Apify (optional) | Author baselines, off-session | ~$0.32 per 10-author harvest | Only if enabled |
 | Whisper | Audio hooks | $0 local (`faster-whisper`) | No |
 | Playwright, ffmpeg, SQLite | Harvest, media, storage | $0 | No |
 

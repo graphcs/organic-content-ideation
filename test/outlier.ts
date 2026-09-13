@@ -53,6 +53,14 @@ check(
   s4.reason,
 );
 
+console.log("\nhidden counts from a scraping service");
+// Apify returns -1 for likes when a creator has hidden them. That must read as
+// "unknown", never as a real number and never as zero.
+check("a -1 sentinel is not a metric", pickMetric({ likes: -1 }) === "none");
+check("a -1 sentinel is excluded from a baseline", baselineFromSample([-1, 100, 200, 300], "likes").n === 3);
+const sentinel = scorePost({ likes: -1 }, baselineFromSample([100, 200, 300], "likes"));
+check("a post with hidden counts is unscored", sentinel.multiple === null && sentinel.band === "unscored");
+
 console.log("\nformatting");
 check("one decimal below 10x", formatMultiple(6.84) === "6.8x");
 check("whole numbers above 10x", formatMultiple(10.86) === "11x");
